@@ -4,123 +4,104 @@
   <meta charset="UTF-8">
   <title>Kotan.pro</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body,html{height:100%;width:100%;font-family:Segoe UI,Tahoma,sans-serif;background:#000;color:#fff;overflow:hidden}
 
-    body, html {
-      height: 100%;
-      width: 100%;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      background: #000;
-      overflow: hidden;
-    }
-
-    .bg {
+    /* Фон с иконками */
+    .icons-bg {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: url('visuals-000099029356-IvqDt9-t1240x260.jpg') center center/cover no-repeat;
+      overflow: hidden;
       z-index: -2;
     }
+    .icon {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      opacity: 0.1;
+      fill: #fff;
+      animation: float 40s linear infinite;
+    }
+    @keyframes float {
+      from { transform: translateY(0) rotate(0deg); }
+      to   { transform: translateY(-200vh) rotate(360deg); }
+    }
 
+    /* Разные размеры и задержки */
+    .icon.small { width: 24px; height: 24px; opacity: 0.08; }
+    .icon.big { width: 60px; height: 60px; opacity: 0.15; }
+
+    /* Overlay затемнение */
     .overlay {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.65);
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.55);
       z-index: -1;
     }
 
-    h1 {
-      font-size: 64px;
-      letter-spacing: 6px;
-      margin-bottom: 20px;
-      background: linear-gradient(90deg, #00ffe0, #ff00f2);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: glow 3s ease-in-out infinite alternate;
+    /* Баннер */
+    .banner {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 100%; max-width: 1240px;
+      box-shadow: 0 0 40px rgba(0,0,0,0.7);
+      z-index: 1;
     }
 
-    p {
-      font-size: 20px;
-      color: #ccc;
-      margin-bottom: 40px;
-      animation: fadeIn 3s ease forwards;
+    /* Контакт */
+    .contact {
+      position: absolute; bottom: 40px; left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      z-index: 2;
     }
-
-    a.mail {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px 28px;
-      border: 2px solid #00ffe0;
-      border-radius: 30px;
-      color: #00ffe0;
-      text-decoration: none;
-      font-weight: bold;
-      font-size: 18px;
-      transition: all 0.3s ease;
-      animation: fadeInUp 2s ease forwards;
+    .mail {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 12px 28px; border: 2px solid #00ffe0;
+      border-radius: 30px; color: #00ffe0;
+      text-decoration: none; font-weight: bold; font-size: 18px;
+      transition: .3s;
     }
-
-    a.mail svg {
-      width: 22px;
-      height: 22px;
-      fill: currentColor;
-    }
-
-    a.mail:hover {
-      background: #00ffe0;
-      color: #000;
-      box-shadow: 0 0 20px #00ffe0;
-    }
-
-    .footer {
-      position: absolute;
-      bottom: 20px;
-      font-size: 14px;
-      color: #777;
-    }
-
-    @keyframes glow {
-      from { text-shadow: 0 0 5px #00ffe0, 0 0 10px #00ffe0; }
-      to   { text-shadow: 0 0 15px #ff00f2, 0 0 25px #ff00f2; }
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to   { opacity: 1; }
-    }
-
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+    .mail svg { width: 22px; height: 22px; fill: currentColor; }
+    .mail:hover { background:#00ffe0; color:#000; box-shadow:0 0 20px #00ffe0; }
   </style>
 </head>
 <body>
-  <div class="bg"></div>
+  <!-- Иконки -->
+  <div class="icons-bg">
+    <!-- Музыка / DJ -->
+    <svg class="icon small" style="top:90%;left:10%;animation-duration:30s" viewBox="0 0 24 24"><path d="M12 3v18c-4.97 0-9-4.03-9-9s4.03-9 9-9zM12 3c4.97 0 9 4.03 9 9s-4.03 9-9 9V3z"/></svg>
+    <svg class="icon big" style="top:70%;left:80%;animation-duration:50s" viewBox="0 0 24 24"><path d="M6 3h12v2H6V3zm0 16h12v2H6v-2zm0-8h12v2H6v-2z"/></svg>
+    <!-- Crypto -->
+    <svg class="icon" style="top:60%;left:30%;animation-duration:60s" viewBox="0 0 24 24"><path d="M12 2L2 7h20L12 2zm0 20l10-5V9L12 14 2 9v8l10 5z"/></svg>
+    <!-- Chef -->
+    <svg class="icon small" style="top:20%;left:50%;animation-duration:55s" viewBox="0 0 24 24"><path d="M12 2c-4.42 0-8 3.58-8 8 0 3.31 2.69 6 6 6v2H6v2h12v-2h-4v-2c3.31 0 6-2.69 6-6 0-4.42-3.58-8-8-8z"/></svg>
+    <!-- Car -->
+    <svg class="icon big" style="top:85%;left:60%;animation-duration:48s" viewBox="0 0 24 24"><path d="M18 6h-2V4c0-1.1-.9-2-2-2H10C8.9 2 8 2.9 8 4v2H6c-1.1 0-2 .9-2 2v12c0 
+  1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6 12c-2.21 
+  0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/></svg>
+    <!-- Plane -->
+    <svg class="icon" style="top:10%;left:20%;animation-duration:65s" viewBox="0 0 24 24"><path d="M2.5 19h19l-9.5-16-9.5 16z"/></svg>
+    <!-- Gaming -->
+    <svg class="icon small" style="top:40%;left:75%;animation-duration:70s" viewBox="0 0 24 24"><path d="M6 8h12c1.1 0 2 .9 2 2v6c0 
+    1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-6c0-1.1.9-2 2-2zm3 2v2h2v-2H9zm4 
+    0v2h2v-2h-2z"/></svg>
+    <!-- (можно добавить ещё копии с разными координатами) -->
+  </div>
+
   <div class="overlay"></div>
 
-  <h1>KOTAN.PRO</h1>
-  <p>Website under construction</p>
+  <!-- Баннер -->
+  <img src="visuals-000099029356-IvqDt9-t1240x260.jpg" alt="KOTAN banner" class="banner">
 
-  <a href="mailto:me@kotan.pro" class="mail">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-      <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 
-               2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 
-               4-8 5-8-5V6l8 5 8-5v2z"/>
-    </svg>
-    Contact me
-  </a>
-
-  <div class="footer">© 2025 Kotan</div>
+  <!-- Контакт -->
+  <div class="contact">
+    <a href="mailto:me@kotan.pro" class="mail">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 
+      2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 
+      2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 
+      5 8-5v2z"/></svg>
+      Contact me
+    </a>
+  </div>
 </body>
 </html>
-
