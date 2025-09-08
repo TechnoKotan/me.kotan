@@ -1,0 +1,86 @@
+/* hero */
+.hero {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 48px 16px;
+}
+
+.hero__title {
+  font-size: clamp(40px, 6vw, 84px);
+  letter-spacing: 0.02em;
+  margin: 0 0 8px;
+}
+
+.hero__subtitle {
+  font-size: clamp(14px, 2.2vw, 18px);
+  opacity: .85;
+  margin: 0 0 24px;
+}
+
+.hero__links {
+  display: inline-flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: 1px solid hsl(0 0% 100% / 0.10);
+  background: color-mix(in hsl, black 60%, transparent);
+  text-decoration: none;
+  color: #fff;
+  transition: transform .15s ease, background .2s ease, border-color .2s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  border-color: hsl(0 0% 100% / 0.18);
+}
+
+.btn:active {
+  transform: translateY(0);
+}
+
+.badge {
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  opacity: .8;
+}
+
+.icon-float {
+  position: absolute;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.icon-rot {
+  display: block;
+  transform-origin: center;
+  animation-name: spin;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  transform-box: fill-box;
+  /* для inline SVG */
+}
+
+#contact-footer {
+  position: fixed;
+  left: 50%;
+  bottom: 48px;
+  transform: translateX(-50%);
+  text-align: center;
+  z-index: 100;
+}
+
+#contact-footer .btn {
+  font-size: 1rem;
+  padding: 12px 28px;
+}

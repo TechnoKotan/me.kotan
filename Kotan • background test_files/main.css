@@ -1,0 +1,89 @@
+:root {
+  --bg: #0a0b0e;
+  --ink: #e7ecf7;
+}
+
+* {
+  box-sizing: border-box
+}
+
+html,
+body {
+  height: 100%
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--bg);
+  font: 16px/1.45 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+}
+
+/* сетка фона, опускаем ее ниже иконок */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    linear-gradient(rgba(255, 255, 255, .03) 1px, transparent 1px) 0 0/40px 40px,
+    linear-gradient(90deg, rgba(255, 255, 255, .03) 1px, transparent 1px) 0 0/40px 40px;
+  opacity: .12;
+  pointer-events: none;
+  z-index: -1;
+  /* важно */
+}
+
+.wrap {
+  min-height: 200vh;
+  padding: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+/* слой иконок поверх сетки и под контентом */
+.icon-field {
+  position: fixed;
+  inset: -10vh 0 0 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* каждая иконка */
+.icon {
+  position: absolute;
+  width: clamp(20px, 2.4vw, 40px);
+  opacity: .20;
+  /* неоновые тени */
+  filter:
+    drop-shadow(0 6px 18px rgba(0, 0, 0, .55)) drop-shadow(0 0 8px var(--col));
+  animation: float var(--dur, 28s) linear infinite;
+  transform: translate3d(0, 0, 0) rotate(var(--rot, 0deg));
+  will-change: transform;
+}
+
+.icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: var(--col);
+  opacity: .92;
+  /* было .85 */
+}
+
+
+@keyframes float {
+  from {
+    transform: translate3d(0, 0, 0) rotate(var(--rot, 0deg))
+  }
+
+  to {
+    transform: translate3d(0, -140vh, 0) rotate(calc(var(--rot, 0deg) + 360deg))
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon {
+    animation: none
+  }
+}
