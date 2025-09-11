@@ -1,0 +1,27 @@
+name: Sync gpt-view from main
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: write
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: Ensure branch exists and force-update
+        run: |
+          git fetch origin
+          if ! git ls-remote --heads origin gpt-view | grep -q gpt-view; then
+            git branch gpt-view origin/main
+            git push -u origin gpt-view
+          fi
+          git push origin origin/main:refs/heads/gpt-view -f
