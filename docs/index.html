@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>me.kotan code browser</title>
+<style>
+body { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; margin:0; display:grid; grid-template-columns: 320px 1fr; height:100vh; }
+aside { border-right:1px solid #ddd; overflow:auto; padding:12px; }
+main { overflow:auto; padding:12px; }
+a { color:#0366d6; text-decoration:none; }
+a:hover { text-decoration:underline; }
+.folder, .file { display:block; padding:4px 6px; border-radius:6px; }
+.folder:hover, .file:hover { background:#f4f6f8; }
+pre { white-space: pre-wrap; word-break: break-word; background:#f8f8f8; padding:12px; border-radius:8px; }
+.small { color:#666; font-size:12px; }
+header { grid-column: 1 / -1; padding:8px 12px; border-bottom:1px solid #ddd; display:flex; gap:12px; align-items:center; }
+input { width: 100%; max-width: 600px; padding:6px 8px; border:1px solid #ccc; border-radius:8px; }
+.codehdr { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+button { padding:6px 10px; border:1px solid #ccc; border-radius:6px; background:#fff; cursor:pointer; }
+button:hover { background:#f4f6f8; }
+</style>
+</head>
+<body>
+<header>
+  <strong>me.kotan @ gpt-view</strong>
+  <input id="pathInput" placeholder="path... например: js/bgIcons.js">
+  <button id="openBtn">Open</button>
+  <span class="small">Repo: TechnoKotan/me.kotan • Branch: gpt-view</span>
+</header>
+<aside id="tree"></aside>
+<main>
+  <div class="codehdr">
+    <div id="filePath" class="small"></div>
+    <div>
+      <a id="rawLink" target="_blank" class="small">raw</a>
+      &nbsp;|&nbsp;
+      <a id="hubLink" target="_blank" class="small">GitHub</a>
+    </div>
+  </div>
+  <pre id="code">Выберите файл слева…</pre>
+</main>
+
+<script>
+const owner = 'TechnoKotan';
+const repo = 'me.kotan';
+const branch = 'gpt-view';
+
+const api = (path='') => `https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`;
+const raw = (path) => `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
+const hub = (path) => `https://github.com/${owner}/${repo}/blob/${branch}/${path}`;
+
+const treeEl = document.getElementById('tree');
+const codeEl = document.getElementById('code');
+const filePathEl = document.getElementById('filePath');
+const rawLink = document.getElementById('rawLink');
+const hubLink = document.getElementById('hubLink');
+const pathInput = document.getElementById('pathInput');
+document.getElementById('openBtn').onclick = () => openPath(pathInput.value.trim());
+
+async function fetchJSON(url){
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('HTTP '+res.status);
+  return res.json();
+}
+
+async function list(path=''){
+  const items = await fetchJSON(api(path));
+  items.sort((a,b)=>{
+    if(a.type===b.type) return a.name.localeCompare(b.name);
+    return a.type==='dir' ? -1 : 1;
+  });
+  const ul = document.createElement('div');
+  if(path){
+    const up = path.split('/').slice(0,-1).join('/');
+    const back = document.createElement('a');
+    back.textContent = '⬅ …';
+    back.href = '#';
+    back.onclick = (e)=>{e.preventDefault(); render(up);};
+    back.className='folder';
+    ul.appendChild(back);
+  }
+  for(const it of items){
+    const link = document.createElement('a');
+    link.textContent = (it.type==='dir'?'📁 ':'📄 ')+it.name;
+    link.href = '#';
+    link.className = it.type==='dir' ? 'folder' : 'file';
+    link.onclick = (e)=>{
+      e.preventDefault();
+      if(it.type==='dir') render((path?path+'/':'')+it.name);
+      else openPath((path?path+'/':'')+it.name);
+    };
+    ul.appendChild(link);
+  }
+  treeEl.innerHTML = '';
+  treeEl.appendChild(ul);
+}
+
+async function openPath(path){
+  if(!path){ return; }
+  filePathEl.textContent = path;
+  rawLink.href = raw(path);
+  hubLink.href = hub(path);
+  try{
+    const meta = await fetchJSON(api(path));
+    if(meta.encoding==='base64' && meta.content){
+      const txt = atob(meta.content.replace(/\\n/g,''));
+      codeEl.textContent = txt;
+    }else{
+      // если API не вернул content, скачиваем через raw
+      const res = await fetch(raw(path));
+      codeEl.textContent = await res.text();
+    }
+  }catch(err){
+    codeEl.textContent = 'Ошибка: '+err.message;
+  }
+}
+
+function render(path=''){
+  list(path);
+}
+
+render('');
+</script>
+</body>
+</html>
