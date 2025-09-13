@@ -23,7 +23,7 @@
 .panel-group{
   backface-visibility: hidden;
   display: flex;
-  width: 100%;
+  width: max-content;
   height: 100%;
   transform: translate3d(calc(var(--panel-index, 0) * -100vw), 0, 0);
   -webkit-transform: translate3d(calc(var(--panel-index, 0) * -100vw), 0, 0);
@@ -39,6 +39,8 @@
   display: grid;
   place-items: center;
   padding: 0;
+
+  overflow: hidden;
 }
 
 .panel-inner{

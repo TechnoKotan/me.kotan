@@ -3,28 +3,73 @@
 // import './icons.js' - для простого HTML это не работает без сборки,
 // значит просто добавь еще один <script src="js/icons.js" defer></script> в index.html ниже main.js
 
-
 // --- Tabs + swipe + lazy loader unified ---
 (function(){
   const tabs = Array.from(document.querySelectorAll('.top-nav .tab'));
   const group = document.getElementById('panelGroup');
   if (!tabs.length || !group) return;
 
-  
+  const panels = Array.from(group.querySelectorAll('.panel'));
+  const cache = new Map();
+
+  // ---------- Enhancements (forms + memes) ----------
+  function attachEnhancements(scope){
+    attachForm(scope);
+    attachMemes(scope);
+  }
+
+  function attachForm(scope){
+    const form = scope.querySelector('#contactForm');
+    if (!form) return;
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const name = (fd.get('name') || '').toString().trim();
+      const email = (fd.get('email') || '').toString().trim();
+      const message = (fd.get('message') || '').toString().trim();
+      if (!name || !email || !message) { alert('Please fill all fields'); return; }
+      const subject = encodeURIComponent('Kotan site contact');
+      const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\n${message}`);
+      const mailto = `mailto:me@kotan.pro?subject=${subject}&body=${body}`;
+      window.location.href = mailto;
+    }, { once: true });
+  }
+
   function attachMemes(scope){
     const grid = scope.querySelector('#memesGrid');
     if (!grid || scope.dataset.memesBound) return;
     scope.dataset.memesBound = '1';
 
     const btn = scope.querySelector('#memesRefresh');
-    const tabs = Array.from(document.querySelectorAll('.top-nav .tab'));
-    const memesIndex = tabs.findIndex(a => a.getAttribute('href') === '#memes');
+    const tabsLocal = Array.from(document.querySelectorAll('.top-nav .tab'));
+    const memesIndex = tabsLocal.findIndex(a => a.getAttribute('href') === '#memes');
 
-    // queue stores latest-first URLs (avoid duplicates)
-    const queue = [];
-    const seen = new Set();
-
+    const MAX_ITEMS = 30;
     const allowExt = /\.(jpg|jpeg|png|gif|webp)$/i;
+    const subs = ['catmemes','meow_irl','CatsStandingUp','catswhoyell','IllegallySmolCats'];
+    const queue = [];            // rendered (latest-first)
+    const seenSession = new Set();
+    const pool = [];             // pre-fetched
+    const LS_KEY = 'kotan_memes_seen_v1';
+
+    const todayKey = new Date().toISOString().slice(0,10);
+    let seenPersist = {};
+    try { seenPersist = JSON.parse(localStorage.getItem(LS_KEY) || '{}'); } catch(e){}
+    if (seenPersist.date !== todayKey) { seenPersist = { date: todayKey, urls: [] }; }
+    const seenGlobal = new Set(seenPersist.urls || []);
+
+    function saveSeen(){
+      try {
+        seenPersist.urls = Array.from(seenGlobal).slice(-500);
+        localStorage.setItem(LS_KEY, JSON.stringify(seenPersist));
+      } catch(e){}
+    }
+    const norm = (url='') => (url || '').replace(/&amp;/g, '&');
+    const isGood = (url) => !!url && allowExt.test(url);
+    function shuffle(arr){
+      for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+      return arr;
+    }
 
     function makeCard(url, title, href){
       const a = document.createElement('a');
@@ -34,161 +79,86 @@
       const img = document.createElement('img');
       img.src = url;
       img.alt = title || 'cat meme';
+      img.className = 'meme-img';
       img.referrerPolicy = 'no-referrer';
       const card = document.createElement('div');
       card.className = 'meme-card';
-      a.appendChild(img);
-      card.appendChild(a);
+      a.appendChild(img); card.appendChild(a);
       return card;
     }
 
-    function skeleton(n=8){
+    function skeleton(n=12){
       grid.innerHTML = '';
-      for(let i=0;i<n;i++){
-        const d = document.createElement('div');
-        d.className = 'meme-skeleton';
-        grid.appendChild(d);
-      }
+      for(let i=0;i<n;i++){ const d=document.createElement('div'); d.className='meme-skeleton'; grid.appendChild(d); }
     }
 
-    function computeCapacity(){
-      const gridRect = grid.getBoundingClientRect();
-      const cell = 220; // target card size in px
-      const cols = Math.max(2, Math.floor(gridRect.width / cell));
-      const rows = Math.max(2, Math.floor(gridRect.height / cell));
-      return Math.max(6, cols * rows);
-    }
-
-    let capacity = computeCapacity();
-    let filling = false;
-
-    function renderQueue(){
+    function render(){
       grid.innerHTML = '';
-      for(let i=0; i<Math.min(queue.length, capacity); i++){
-        const it = queue[i];
-        grid.appendChild(makeCard(it.url, it.title, it.postLink || it.source));
-      }
-      // pad with skeletons if queue is still filling
-      for(let i=queue.length; i<capacity; i++){
-        const d = document.createElement('div');
-        d.className = 'meme-skeleton';
-        grid.appendChild(d);
-      }
+      const n = Math.min(queue.length, MAX_ITEMS);
+      for(let i=0;i<n;i++){ const it=queue[i]; grid.appendChild(makeCard(it.url, it.title, it.postLink || it.source)); }
+      if (n < 12){ for(let i=n;i<12;i++){ const d=document.createElement('div'); d.className='meme-skeleton'; grid.appendChild(d); } }
     }
 
-    function pushItem(it){
-      if (!it || !it.url || !allowExt.test(it.url)) return false;
-      if (seen.has(it.url)) return false;
-      queue.unshift(it);
-      seen.add(it.url);
-      if (queue.length > capacity) {
-        const removed = queue.pop();
-        if (removed) seen.delete(removed.url);
-      }
-      renderQueue();
-      return true;
+    function push(it){
+      if (!it || !isGood(it.url)) return false;
+      if (seenSession.has(it.url) || seenGlobal.has(it.url)) return false;
+      queue.unshift(it); seenSession.add(it.url); seenGlobal.add(it.url);
+      while(queue.length > MAX_ITEMS) queue.pop();
+      render(); saveSeen(); return true;
     }
 
-    async function getOneFromMemeAPI(){
-      const url = 'https://meme-api.com/gimme/catmemes';
-      const r = await fetch(url, { cache: 'no-store' });
-      const j = await r.json();
-      const x = j.meme || j;
-      return { url: x.url, title: x.title, postLink: x.postLink, source: 'meme-api' };
+    // Multi-source bulk
+    async function fromMemeApiBulk(){
+      const url = `https://meme-api.com/gimme/${subs.join(',')}/60?_=${Date.now()}`;
+      const r = await fetch(url, { cache: 'no-store' }); const j = await r.json();
+      return (j.memes || []).map(x => ({ url: norm(x.url), title: x.title, postLink: x.postLink, source: 'meme-api' })).filter(x => isGood(x.url));
+    }
+    async function fromRedditBulk(){
+      const multi=subs.join('+');
+      const url = `https://www.reddit.com/r/${multi}/top.json?limit=100&t=week&_=${Date.now()}`;
+      const r = await fetch(url, { cache: 'no-store' }); const j = await r.json();
+      return (j.data?.children || []).map(c => c.data).map(d => ({
+        url: norm(d.url_overridden_by_dest || d.url || (d.preview?.images?.[0]?.source?.url) || ''),
+        title: d.title, postLink: 'https://reddit.com'+d.permalink, source: 'reddit'
+      })).filter(x => isGood(x.url));
+    }
+    async function fromCatApiBulk(){
+      const url=`https://api.thecatapi.com/v1/images/search?limit=40&mime_types=jpg,png,gif&_=${Date.now()}`;
+      const r=await fetch(url,{cache:'no-store'}); const j=await r.json();
+      return (j||[]).map(x=>({ url:norm(x.url), title:'cat', postLink:x.url, source:'thecatapi' })).filter(x=>isGood(x.url));
     }
 
-    async function getOneFromReddit(){
-      const url = 'https://www.reddit.com/r/catmemes/hot.json?limit=50';
-      const r = await fetch(url, { cache: 'no-store' });
-      const j = await r.json();
-      const items = (j.data.children || []).map(c => c.data).map(d => ({
-        url: d.url_overridden_by_dest || (d.preview && d.preview.images && d.preview.images[0] && d.preview.images[0].source && d.preview.images[0].source.url) || '',
-        title: d.title, postLink: 'https://reddit.com' + d.permalink, source: 'reddit'
-      }));
-      // pick first unseen valid
-      return items.find(it => it.url && allowExt.test(it.url) && !seen.has(it.url));
+    async function fillPool(){
+      let a=[],b=[],c=[]; try{a=await fromMemeApiBulk();}catch(e){} try{b=await fromRedditBulk();}catch(e){} try{c=await fromCatApiBulk();}catch(e){}
+      const merged = shuffle([...a,...b,...c]); const seenTmp=new Set(); pool.length=0;
+      for(const it of merged){ if(!isGood(it.url)) continue; if(seenTmp.has(it.url)||seenSession.has(it.url)||seenGlobal.has(it.url)) continue; seenTmp.add(it.url); pool.push(it); }
     }
 
-    async function getOneFromTheCatAPI(){
-      const url = 'https://api.thecatapi.com/v1/images/search?limit=1&mime_types=jpg,png,gif';
-      const r = await fetch(url, { cache: 'no-store' });
-      const j = await r.json();
-      const x = (j && j[0]) || null;
-      if (!x) return null;
-      return { url: x.url, title: 'cat', postLink: x.url, source: 'thecatapi' };
-    }
-
-    async function fetchOne(){
-      // try in order; return first valid unseen
-      try{
-        const a = await getOneFromMemeAPI();
-        if (a && a.url && allowExt.test(a.url) && !seen.has(a.url)) return a;
-      }catch(e){}
-      try{
-        const b = await getOneFromReddit();
-        if (b && b.url && allowExt.test(b.url) && !seen.has(b.url)) return b;
-      }catch(e){}
-      try{
-        const c = await getOneFromTheCatAPI();
-        if (c && c.url && allowExt.test(c.url) && !seen.has(c.url)) return c;
-      }catch(e){}
-      return null;
-    }
-
-    async function prime(n){
-      if (filling) return; filling = true;
-      skeleton(Math.min(n, 12));
-      let tries = 0;
-      while(queue.length < n && tries < n * 6){
-        const it = await fetchOne();
-        if (it && pushItem(it)) { /* ok */ }
-        tries++;
-      }
-      filling = false;
-      renderQueue();
+    async function prime(){
+      skeleton(12); await fillPool();
+      let guard=0; while(queue.length<MAX_ITEMS && pool.length && guard<MAX_ITEMS*3){ const it=pool.shift(); if(it) push(it); guard++; }
+      render();
+      if (queue.length < 12){ await fillPool(); let g2=0; while(queue.length<12 && pool.length && g2<50){ const it=pool.shift(); if(it) push(it); g2++; } render(); }
     }
 
     async function tick(){
-      // only when Memes is active
       const idx = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--panel-index')) || 0;
       if (idx !== memesIndex) return;
-      const it = await fetchOne();
-      if (it) pushItem(it);
+      if (!pool.length) await fillPool();
+      const it = pool.shift(); if (it) push(it);
     }
 
-    // Resize handling to keep full viewport grid without scroll
-    const ro = new ResizeObserver(() => {
-      const newCap = computeCapacity();
-      if (newCap !== capacity){
-        capacity = newCap;
-        // trim or pad queue rendering
-        if (queue.length > capacity){
-          while(queue.length > capacity){
-            const removed = queue.pop();
-            if (removed) seen.delete(removed.url);
-          }
-        }
-        renderQueue();
-      }
+    // init + timers
+    prime();
+    if (btn) btn.addEventListener('click', async () => { await fillPool(); await tick(); });
+    if (!window.__memesMinuteTimer){ window.__memesMinuteTimer = setInterval(tick, 60 * 1000); }
+    window.addEventListener('hashchange', async () => {
+      const idx = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--panel-index')) || 0;
+      if (idx === memesIndex && !pool.length) await fillPool();
     });
-    ro.observe(grid);
-
-    // init
-    prime(capacity);
-
-    // manual refresh = fetch one now
-    if (btn) btn.addEventListener('click', tick);
-
-    // every minute pull one new and drop last
-    if (!window.__memesMinuteTimer){
-      window.__memesMinuteTimer = setInterval(tick, 60 * 1000);
-    }
   }
 
-
-  const panels = Array.from(group.querySelectorAll('.panel'));
-  const cache = new Map();
-
+  // ---------- Panel loader & router ----------
   async function loadIntoIndex(i){
     if (i < 0 || i >= panels.length) return;
     const panel = panels[i];
@@ -206,9 +176,7 @@
     }
   }
 
-  function preloadAround(i){
-    [i, i-1, i+1].forEach(loadIntoIndex);
-  }
+  function preloadAround(i){ [i, i-1, i+1].forEach(loadIntoIndex); }
 
   function setActiveByIndex(i){
     document.documentElement.style.setProperty('--panel-index', i);
@@ -237,7 +205,7 @@
 
   window.addEventListener('hashchange', () => { const i = indexFromHash(); setActiveByIndex(i); });
 
-  // Optional: horizontal wheel
+  // Optional: horizontal wheel (desktop)
   let wheelBlock = false;
   group.addEventListener('wheel', (e) => {
     if (wheelBlock) return;
@@ -256,22 +224,49 @@
     }
   }, { passive: false });
 
-  function attachEnhancements(scope){ attachForm(scope); attachMemes(scope); }
+  // ---------- Touch swipe (mobile) ----------
+  (function addTouchSwipe(){
+    let startX=0, startY=0, dx=0, dy=0, active=false, locked=false;
+    const threshold = 40; // px
+    const restraint = 18; // vertical tolerance
 
-function attachForm(scope){
-    const form = scope.querySelector('#contactForm');
-    if (!form) return;
-    form.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const fd = new FormData(form);
-      const name = (fd.get('name') || '').toString().trim();
-      const email = (fd.get('email') || '').toString().trim();
-      const message = (fd.get('message') || '').toString().trim();
-      if (!name || !email || !message) { alert('Please fill all fields'); return; }
-      const subject = encodeURIComponent('Kotan site contact');
-      const body = encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\n${message}`);
-      const mailto = `mailto:me@kotan.pro?subject=${subject}&body=${body}`;
-      window.location.href = mailto;
-    }, { once: true });
-  }
+    function currentIndex(){
+      return parseInt(getComputedStyle(document.documentElement).getPropertyValue('--panel-index')) || 0;
+    }
+
+    group.addEventListener('touchstart', (e) => {
+      if (!e.touches || e.touches.length !== 1) return;
+      const t = e.touches[0];
+      startX = t.clientX; startY = t.clientY; dx = dy = 0; active = true; locked = false;
+    }, { passive: true });
+
+    group.addEventListener('touchmove', (e) => {
+      if (!active || !e.touches || e.touches.length !== 1) return;
+      const t = e.touches[0];
+      dx = t.clientX - startX;
+      dy = t.clientY - startY;
+      // horizontal intent
+      if (!locked && Math.abs(dx) > Math.abs(dy) + restraint){
+        locked = true;
+      }
+      if (locked) e.preventDefault(); // block vertical scroll during horizontal swipe
+    }, { passive: false });
+
+    group.addEventListener('touchend', () => {
+      if (!active) return;
+      active = false;
+      if (!locked) return;
+      const i = currentIndex();
+      if (Math.abs(dx) > threshold){
+        const dir = dx < 0 ? 1 : -1;
+        const next = Math.max(0, Math.min(tabs.length-1, i + dir));
+        if (next !== i){
+          const target = tabs[next].getAttribute('href');
+          history.replaceState(null, '', target);
+          setActiveByIndex(next);
+        }
+      }
+    }, { passive: true });
+  })();
+
 })();
