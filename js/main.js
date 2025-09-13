@@ -213,6 +213,7 @@
   function setActiveByIndex(i){
     document.documentElement.style.setProperty('--panel-index', i);
     tabs.forEach((t, idx) => t.classList.toggle('is-active', idx === i));
+    loadIntoIndex(i);
     preloadAround(i);
   }
 
@@ -234,7 +235,7 @@
     });
   });
 
-  window.addEventListener('hashchange', () => setActiveByIndex(indexFromHash()));
+  window.addEventListener('hashchange', () => { const i = indexFromHash(); setActiveByIndex(i); });
 
   // Optional: horizontal wheel
   let wheelBlock = false;

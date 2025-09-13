@@ -3,30 +3,42 @@
 :root { --panel-index: 0; }
 
 .panels{
+  /* Use dynamic viewport units on iOS for correct height */
+  height: calc(100vh - 80px);
+}
+@supports (height: 100dvh){
+  .panels{ height: calc(100dvh - 80px); }
+}
+
+.panels{
   position: relative;
   z-index: 200; /* below nav (1000), above background */
   width: 100vw;
-  height: calc(100vh - 80px); /* reserve space for nav */
+  /* reserve space for nav */
   margin-top: 72px;           /* visual spacing below nav */
   overflow: hidden;
   pointer-events: auto;
 }
 
 .panel-group{
+  backface-visibility: hidden;
   display: flex;
   width: 100%;
   height: 100%;
-  transform: translateX(calc(var(--panel-index, 0) * -100vw));
+  transform: translate3d(calc(var(--panel-index, 0) * -100vw), 0, 0);
+  -webkit-transform: translate3d(calc(var(--panel-index, 0) * -100vw), 0, 0);
   transition: transform .45s cubic-bezier(.22,1,.36,1);
   will-change: transform;
 }
 
 .panel{
+  contain: layout paint;
+  box-sizing: border-box;
   flex: 0 0 100vw;
   height: 100%;
   display: grid;
   place-items: center;
-  padding: 24px;
+  padding: 0;
 }
 
 .panel-inner{
@@ -49,7 +61,15 @@
 }
 
 @media (max-width: 720px){
-  .panels{ height: calc(100vh - 96px); margin-top: 64px; }
+  .panels{
+  /* Use dynamic viewport units on iOS for correct height */
+  height: calc(100vh - 80px);
+}
+@supports (height: 100dvh){
+  .panels{ height: calc(100dvh - 80px); }
+}
+
+.panels{ height: calc(100vh - 96px); margin-top: 64px; }
   }
 
 /* Memes panel should not be center-aligned like other panels */
