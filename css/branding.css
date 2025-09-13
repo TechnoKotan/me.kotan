@@ -1,0 +1,33 @@
+/* Branding styles for logo experimentation */
+
+.logo {
+  font-family: var(--font-heading);
+  font-size: 3rem;
+  font-weight: 700;
+}
+
+/* Variant 1: Gradient text */
+/* Variant 1: Gradient text */
+.logo-gradient {
+  background: linear-gradient(90deg, #ff0080, #7928ca);
+  background-clip: text;              /* стандартное свойство */
+  -webkit-background-clip: text;      /* для Chrome/Safari */
+  -webkit-text-fill-color: transparent;
+  color: transparent;                 /* fallback */
+}
+
+
+/* Variant 2: Stroke */
+.logo-stroke {
+  color: white;
+  -webkit-text-stroke: 1px black;
+  paint-order: stroke fill;
+}
+
+/* Variant 3: Neon glow */
+.logo-glow {
+  color: white;
+  text-shadow: 0 0 10px rgba(255,255,255,0.8),
+               0 0 20px #ff00cc,
+               0 0 40px #ff00cc;
+}

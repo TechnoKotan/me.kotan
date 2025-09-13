@@ -10,6 +10,17 @@
 
 <body>
 
+  <!-- Primary top navigation -->
+  <nav class="top-nav" aria-label="Primary">
+    <a class="tab" href="#home">Home</a>
+    <a class="tab" href="#news">News</a>
+    <a class="tab" href="#media">Media</a>
+    <a class="tab" href="#memes">Memes</a>
+    <a class="tab" href="#kpm">KotanPlotMaker</a>
+    <a class="tab" href="#about">About</a>
+  </nav>
+
+
   <!-- фоновые слои -->
   <div class="bg-stack">
     <div class="bg-layer bg-base"></div>
@@ -25,27 +36,32 @@
 
 
   <!-- hero -->
-  <section class="hero container">
-    <div>
-      <div class="badge mt-24">Producer • Musician • DJ</div>
-      <h1 class="hero__title">Kotan</h1>
-      <p class="hero__subtitle">music, mixes, live</p>
-      <div class="hero__links mt-24">
-        <a class="btn" href="https://www.instagram.com/kotanmusic/" target="_blank" rel="noopener">Instagram</a>
-        <a class="btn" href="https://www.youtube.com/@alexkotanmusic7138" target="_blank" rel="noopener">YouTube</a>
-        <a class="btn" href="https://soundcloud.com/kotanmusic" target="_blank" rel="noopener">SoundCloud</a>
+  
 
-
-      </div>
+  <!-- App panels - swipeable content area -->
+  <main id="app" class="panels">
+    <div class="panel-group" id="panelGroup" aria-live="polite">
+      <section class="panel" id="home" aria-label="Home" data-src="pages/home.html"></section>
+      <section class="panel" id="news" aria-label="News" data-src="pages/news.html">
+        <!-- content will be injected here -->
+      </section>
+      <section class="panel" id="media" aria-label="Media" data-src="pages/media.html">
+      </section>
+      <section class="panel" id="memes" aria-label="Memes" data-src="pages/memes.html">
+      </section>
+      <section class="panel" id="kpm" aria-label="KotanPlotMaker" data-src="pages/kpm.html">
+      </section>
+      <section class="panel" id="about" aria-label="About" data-src="pages/about.html">
+      </section>
     </div>
-  </section>
+  </main>
 
-  <script src="js/main.js" defer></script>
+<script src="js/main.js" defer></script>
   <script src="js/icons.js" defer></script>
 
   <!-- Email button footer -->
   <footer id="contact-footer">
-    <a href="mailto:me@kotan.pro" class="btn">Contact me</a>
+    <a href="mailto:me@kotan.pro" class="btn">Contact</a>
   </footer>
 
 

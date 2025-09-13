@@ -39,3 +39,14 @@ body {
   border: 1px solid hsl(0 0% 100% / 0.06);
   border-radius: 16px;
 }
+
+/* Lock vertical scroll for panel UI on large screens */
+html, body{
+  height: 100%;
+  overflow: hidden;
+}
+@media (max-width: 740px){
+  html, body{
+    overflow: auto;
+  }
+}

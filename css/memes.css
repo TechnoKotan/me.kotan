@@ -1,0 +1,73 @@
+
+/* --- Memes panel: full-height with its own vertical scroll --- */
+#memes { display:block; padding: 0; }
+#memes .panel-inner{
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 16px 16px 20px;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  overflow-y: auto;
+}
+
+/* Grid layout */
+#memes .memes-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  align-content: start;
+  justify-content: center;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+/* Cards are strict squares */
+.meme-card{
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.05);
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+/* Clickable area fills the card */
+.meme-card a{
+  position: absolute;
+  inset: 0;
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+/* Image fills without overflow */
+.meme-card img{
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  object-fit: cover !important;
+  display: block;
+}
+
+/* Skeletons */
+.meme-skeleton{
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: linear-gradient(90deg, rgba(255,255,255,0.06), rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+  background-size: 200% 100%;
+  animation: memeShimmer 1.2s infinite linear;
+  aspect-ratio: 1 / 1;
+}
+
+@keyframes memeShimmer{
+  0% { background-position: 0% 0; }
+  100% { background-position: -200% 0; }
+}

@@ -1,0 +1,42 @@
+/* Typography module
+ * Fonts picked for DJ-producer personal site vibe
+ * Headings: Bebas Neue - strong display
+ * Body: Inter - clean, readable
+ */
+
+/* Load fonts */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;700&display=swap');
+
+:root {
+  --font-heading: 'Bebas Neue', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+}
+
+/* Base rendering improvements */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-body);
+  line-height: 1.6;
+}
+
+/* Headings and key UI accents */
+h1, h2, h3, h4, h5, h6,
+.hero-title,
+nav, .nav, .menu,
+button, .btn, .cta {
+  font-family: var(--font-heading);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* Links inherit body font by default */
+a { font-family: inherit; }
+
+/* Utility classes to swap fonts explicitly if needed */
+.font-heading { font-family: var(--font-heading) !important; }
+.font-body { font-family: var(--font-body) !important; }
