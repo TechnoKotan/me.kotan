@@ -1,14 +1,59 @@
 <!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Kotan</title>
   <link rel="stylesheet" href="css/main.css" />
+
+  <!-- Consent Mode v2 default denied - must load before GTM -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('consent', 'default', {
+      ad_user_data: 'denied',
+      ad_personalization: 'denied',
+      ad_storage: 'denied',
+      analytics_storage: 'denied',
+      functionality_storage: 'denied',
+      personalization_storage: 'denied',
+      security_storage: 'granted'
+    });
+    // Helper you can call from CMP or console:
+    // window.acceptAnalyticsConsent()
+    window.acceptAnalyticsConsent = function(){
+      gtag('consent', 'update', {
+        ad_user_data: 'granted',
+        ad_personalization: 'granted',
+        ad_storage: 'granted',
+        analytics_storage: 'granted',
+        functionality_storage: 'granted',
+        personalization_storage: 'granted'
+      });
+      dataLayer.push({ event: 'consent_granted' });
+    };
+  </script>
+
+  <!-- Google Tag Manager -->
+  <script>
+  (function(w,d,s,l,i){w[l]=w[l]||[];
+    w[l].push({'gtm.start': new Date().getTime(), event:'gtm.js'});
+    var f=d.getElementsByTagName(s)[0], j=d.createElement(s), dl=l!='dataLayer'?'&l='+l:'';
+    j.async=true; j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;
+    f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-MSHJNJKP');
+  </script>
+  <!-- End Google Tag Manager -->
 </head>
 
 <body>
+
+  <!-- Google Tag Manager (noscript) -->
+  <noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MSHJNJKP"
+            height="0" width="0" style="display:none;visibility:hidden"></iframe>
+  </noscript>
+  <!-- End Google Tag Manager (noscript) -->
 
   <!-- Primary top navigation -->
   <nav class="top-nav" aria-label="Primary">
@@ -20,8 +65,7 @@
     <a class="tab" href="#about">About</a>
   </nav>
 
-
-  <!-- фоновые слои -->
+  <!-- background stack -->
   <div class="bg-stack">
     <div class="bg-layer bg-base"></div>
     <div class="bg-layer bg-auras"></div>
@@ -30,42 +74,60 @@
     <div class="bg-layer bg-noise"></div>
   </div>
 
-  <!-- слой с иконками -->
+  <!-- floating icons layer -->
   <div class="bg-layer bg-icons" id="bg-icons"></div>
-
-
-
-  <!-- hero -->
-  
 
   <!-- App panels - swipeable content area -->
   <main id="app" class="panels">
     <div class="panel-group" id="panelGroup" aria-live="polite">
       <section class="panel" id="home" aria-label="Home" data-src="pages/home.html"></section>
-      <section class="panel" id="news" aria-label="News" data-src="pages/news.html">
-        <!-- content will be injected here -->
-      </section>
-      <section class="panel" id="media" aria-label="Media" data-src="pages/media.html">
-      </section>
-      <section class="panel" id="memes" aria-label="Memes" data-src="pages/memes.html">
-      </section>
-      <section class="panel" id="kpm" aria-label="KotanPlotMaker" data-src="pages/kpm.html">
-      </section>
-      <section class="panel" id="about" aria-label="About" data-src="pages/about.html">
-      </section>
+      <section class="panel" id="news" aria-label="News" data-src="pages/news.html"></section>
+      <section class="panel" id="media" aria-label="Media" data-src="pages/media.html"></section>
+      <section class="panel" id="memes" aria-label="Memes" data-src="pages/memes.html"></section>
+      <section class="panel" id="kpm" aria-label="KotanPlotMaker" data-src="pages/kpm.html"></section>
+      <section class="panel" id="about" aria-label="About" data-src="pages/about.html"></section>
     </div>
   </main>
 
-<script src="js/main.js" defer></script>
+  <script src="js/main.js" defer></script>
   <script src="js/icons.js" defer></script>
+
+  <!-- Virtual pageview hook for GA4 via GTM -->
+  <script>
+    // Fires a virtual page_view through dataLayer for GA4 when tabs are clicked
+    (function(){
+      function pushVirtualPV(label){
+        try {
+          var clean = (label || '').trim();
+          var slug = (location.hash || '#home').replace('#','') || 'home';
+          var path = '/' + slug;
+          dataLayer.push({
+            event: 'virtual_pageview',
+            page_location: window.location.origin + path,
+            page_path: path,
+            page_title: document.title + (clean ? ' - ' + clean : '')
+          });
+        } catch(e){}
+      }
+
+      document.addEventListener('click', function(e){
+        var a = e.target.closest('.top-nav .tab');
+        if(!a) return;
+        pushVirtualPV(a.textContent || '');
+      });
+
+      // Optional: fire on hashchange if navigation is driven by hashes
+      window.addEventListener('hashchange', function(){
+        var link = document.querySelector('.top-nav .tab[href="'+location.hash+'"]');
+        pushVirtualPV(link ? link.textContent : '');
+      });
+    })();
+  </script>
 
   <!-- Email button footer -->
   <footer id="contact-footer">
     <a href="mailto:me@kotan.pro" class="btn">Contact</a>
   </footer>
 
-
-
 </body>
-
 </html>
